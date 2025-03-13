@@ -5,6 +5,7 @@ import com.example.demo.model.Client;
 import com.example.demo.model.ClientDTO;
 import com.example.demo.model.ClientUpdateDTO;
 import com.example.demo.model.AccountInfoDTO;
+import com.example.demo.model.InventoryDTO;
 import com.example.demo.service.ClientService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -138,6 +139,22 @@ public class ClientController {
     public ResponseEntity<String> getAccountNumber(@PathVariable String nationalId) {
         String accountNumber = clientService.getAccountNumber(nationalId);
         return ResponseEntity.ok(accountNumber);
+    }
+
+    /**
+     * Retrieves client's inventory information
+     * @param accountNumber the account number
+     * @return the inventory information
+     */
+    @GetMapping("/inventory/{accountNumber}")
+    public ResponseEntity<ApiResponse<InventoryDTO>> getInventoryInfo(@PathVariable String accountNumber) {
+        try {
+            InventoryDTO inventoryInfo = clientService.getInventoryInfo(accountNumber);
+            return ResponseEntity.ok(ApiResponse.success(inventoryInfo));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(ApiResponse.error(e.getMessage()));
+        }
     }
 
     /**

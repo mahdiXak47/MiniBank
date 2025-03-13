@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -59,6 +60,9 @@ public class Client {
     @Column(name = "account_status", nullable = false, length = 20)
     @Enumerated(EnumType.STRING)
     private AccountStatus accountStatus = AccountStatus.ACTIVE;
+
+    @Column(name = "inventory", nullable = false, precision = 19, scale = 4)
+    private BigDecimal inventory = BigDecimal.ZERO;
 
     public enum ClientType {
         REAL, LEGAL

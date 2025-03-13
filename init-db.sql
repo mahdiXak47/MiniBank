@@ -13,6 +13,7 @@ CREATE TABLE clients (
     account_expires_at TIMESTAMP,
     last_usage_date TIMESTAMP,
     account_status VARCHAR2(20) DEFAULT 'ACTIVE' NOT NULL,
+    inventory NUMBER(19,4) DEFAULT 0 NOT NULL,
     CONSTRAINT check_client_type CHECK (client_type IN ('REAL', 'LEGAL')),
     CONSTRAINT check_account_status CHECK (account_status IN ('ACTIVE', 'INACTIVE', 'BANNED'))
 );

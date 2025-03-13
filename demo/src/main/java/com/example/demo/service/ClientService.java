@@ -5,6 +5,7 @@ import com.example.demo.model.ClientChangeLog;
 import com.example.demo.model.ClientDTO;
 import com.example.demo.model.ClientUpdateDTO;
 import com.example.demo.model.AccountInfoDTO;
+import com.example.demo.model.InventoryDTO;
 import com.example.demo.repository.ClientChangeLogRepository;
 import com.example.demo.repository.ClientRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -156,6 +157,28 @@ public class ClientService {
                 .orElseThrow(() -> new IllegalArgumentException("Client not found"));
         
         return client.getAccountNumber();
+    }
+
+    /**
+     * Retrieves inventory information by account number and updates last usage date
+     * @param accountNumber the account number
+     * @return the inventory information
+     * @throws IllegalArgumentException if the account is not found or inactive/banned
+     */
+    @Transactional
+    public InventoryDTO getInventoryInfo(String accountNumber) {
+        Client client = clientRepository.findByAccountNumber(accountNumber)
+                .orElseThrow(() -> new IllegalArgumentException("Account not found"));
+
+        if (client.getAccountStatus() != Client.AccountStatus.ACTIVE) {
+            throw new IllegalArgumentException("Account is " + client.getAccountStatus().toString().toLowerCase());
+        }
+        
+        // Update last usage date
+        client.setLastUsageDate(LocalDateTime.now());
+        clientRepository.save(client);
+        
+        return InventoryDTO.fromClient(client);
     }
 
     /**

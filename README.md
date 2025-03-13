@@ -9,6 +9,7 @@ A simple banking application that allows users to create client accounts with un
 - Track account creation and expiration dates
 - Update client information with change logging
 - Retrieve client information by ID, national ID, or account number
+- Check account balance and transaction history
 - List all clients
 
 ## Technologies Used
@@ -26,14 +27,14 @@ A simple banking application that allows users to create client accounts with un
 
 #### Create Client
 
-- **POST** `/api/clients`
-- Creates a new client account
+- **POST** `/api/clients/create-account`
+- Creates a new client account with initial balance of 0
 - Request body: ClientDTO with client details
 - Returns: Created client information with generated account number
 
 #### Update Client
 
-- **PUT** `/api/clients/{id}`
+- **PUT** `/api/clients/update-account/{id}`
 - Updates client information
 - Request body: ClientUpdateDTO with updateable fields
 - Required header: `X-Updated-By` (user making the update)
@@ -55,15 +56,27 @@ A simple banking application that allows users to create client accounts with un
 - Retrieves account number using national ID
 - Returns: Account number as string
 
+#### Get Inventory Information
+
+- **GET** `/api/clients/inventory/{accountNumber}`
+- Retrieves account balance and status
+- Returns: Inventory information including:
+  - Account number
+  - Account holder name
+  - Current balance
+  - Account status
+  - Last usage date
+- Note: Account must be active to retrieve balance
+
 #### Get Client by ID
 
-- **GET** `/api/clients/{id}`
+- **GET** `/api/clients/get-account-{id}`
 - Retrieves client information by ID
 - Returns: Complete client information
 
 #### Get All Clients
 
-- **GET** `/api/clients`
+- **GET** `/api/clients/get-all-accounts`
 - Retrieves list of all clients
 - Returns: Array of client information
 
