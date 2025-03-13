@@ -80,6 +80,74 @@ A simple banking application that allows users to create client accounts with un
 - Retrieves list of all clients
 - Returns: Array of client information
 
+### Transfer Operations
+
+#### Request Transfer
+
+- **POST** `/api/transfers/request`
+- Processes a transfer request (Deposit, Harvest, or Transfer)
+- Request body:
+  ```json
+  {
+    "type": "TRANSFER",
+    "senderAccountNumber": "12345678901234",
+    "receiverAccountNumber": "98765432109876",
+    "amount": 100.0,
+    "description": "Optional description"
+  }
+  ```
+- Returns: Tracking code for the transfer
+- Notes:
+  - For DEPOSIT: Only `senderAccountNumber` (target account) is required
+  - For HARVEST: Only `senderAccountNumber` (source account) is required
+  - For TRANSFER: Both `senderAccountNumber` and `receiverAccountNumber` are required
+  - A fee of 0.1% is charged for transfers between accounts
+  - Accounts must be active to participate in transfers
+  - Sender must have sufficient funds (amount + fee for transfers)
+
+#### Check Transfer Status
+
+- **GET** `/api/transfers/status/{trackingCode}`
+- Retrieves the status of a transfer request
+- Returns: Transfer details including:
+  - Type of transfer
+  - Sender and receiver accounts
+  - Amount and fee
+  - Status (PENDING, COMPLETED, FAILED)
+  - Request and process dates
+  - Error message (if failed)
+
+### Transfer Types
+
+1. **Deposit**
+
+   - Increases account balance
+   - No fee charged
+   - No balance check required
+
+2. **Harvest**
+
+   - Decreases account balance
+   - No fee charged
+   - Requires sufficient balance
+
+3. **Transfer**
+   - Moves money between accounts
+   - 0.1% fee charged to sender
+   - Requires sufficient balance (amount + fee)
+   - Both accounts must be active
+
+### Transfer Validation Rules
+
+- Account numbers must be valid and active
+- Sender and receiver accounts cannot be the same
+- Sender must have sufficient funds
+- Amount must be greater than zero
+- For transfers:
+  - Both accounts must exist and be active
+  - Sender must have amount + fee available
+  - Fee is 0.1% of transfer amount
+
 ## Database Setup with Docker
 
 This application uses Oracle Database running in a Docker container. Follow these steps to set up the database:

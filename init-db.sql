@@ -22,6 +22,28 @@ CREATE TABLE clients (
 CREATE INDEX idx_national_id ON clients(national_id);
 CREATE INDEX idx_account_number ON clients(account_number);
 
+-- Create the transfer_tracking table
+CREATE TABLE transfer_tracking (
+    tracking_code VARCHAR2(20) PRIMARY KEY,
+    type VARCHAR2(20) NOT NULL,
+    sender_account VARCHAR2(14),
+    receiver_account VARCHAR2(14),
+    amount NUMBER(19,4) NOT NULL,
+    fee NUMBER(19,4) NOT NULL,
+    description VARCHAR2(500),
+    request_date TIMESTAMP NOT NULL,
+    process_date TIMESTAMP,
+    status VARCHAR2(20) NOT NULL,
+    error_message VARCHAR2(500),
+    CONSTRAINT check_transfer_type CHECK (type IN ('HARVEST', 'DEPOSIT', 'TRANSFER')),
+    CONSTRAINT check_transfer_status CHECK (status IN ('PENDING', 'COMPLETED', 'FAILED')),
+    CONSTRAINT fk_sender_account FOREIGN KEY (sender_account) REFERENCES clients(account_number),
+    CONSTRAINT fk_receiver_account FOREIGN KEY (receiver_account) REFERENCES clients(account_number)
+);
+
+-- Create index for faster lookups
+CREATE INDEX idx_transfer_tracking_date ON transfer_tracking(request_date);
+
 -- Create the client_change_logs table
 CREATE TABLE client_change_logs (
     id NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,

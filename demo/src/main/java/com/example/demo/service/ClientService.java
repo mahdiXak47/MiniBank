@@ -229,6 +229,16 @@ public class ClientService {
     }
 
     /**
+     * Saves a client
+     * @param client the client to save
+     * @return the saved client
+     */
+    @Transactional
+    public Client saveClient(Client client) {
+        return clientRepository.save(client);
+    }
+
+    /**
      * Retrieves all clients
      * @return a list of all clients
      */
