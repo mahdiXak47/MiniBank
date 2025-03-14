@@ -93,6 +93,32 @@ public class TransferService {
             .orElseThrow(() -> new IllegalArgumentException("Invalid tracking code"));
     }
     
+    /**
+     * Get detailed transfer status by tracking code
+     */
+    public TransferStatusDTO getDetailedTransferStatus(String trackingCode) {
+        TransferTracking tracking = transferTrackingRepository.findByTrackingCode(trackingCode)
+            .orElseThrow(() -> new IllegalArgumentException("Invalid tracking code"));
+        
+        // Get sender name if available
+        String senderName = null;
+        if (tracking.getSenderAccountNumber() != null) {
+            senderName = clientService.getClientByAccountNumber(tracking.getSenderAccountNumber())
+                .map(Client::getName)
+                .orElse("Unknown");
+        }
+        
+        // Get receiver name if available
+        String receiverName = null;
+        if (tracking.getReceiverAccountNumber() != null) {
+            receiverName = clientService.getClientByAccountNumber(tracking.getReceiverAccountNumber())
+                .map(Client::getName)
+                .orElse("Unknown");
+        }
+        
+        return TransferStatusDTO.fromTransferTracking(tracking, senderName, receiverName);
+    }
+    
     private void validateRequest(TransferRequestDTO request) {
         // Validate sender account exists and is active
         Client sender = clientService.getClientByAccountNumber(request.getSenderAccountNumber())

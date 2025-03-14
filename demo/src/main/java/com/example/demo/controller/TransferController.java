@@ -2,7 +2,7 @@ package com.example.demo.controller;
 
 import com.example.demo.model.ApiResponse;
 import com.example.demo.model.TransferRequestDTO;
-import com.example.demo.model.TransferTracking;
+import com.example.demo.model.TransferStatusDTO;
 import com.example.demo.service.TransferService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +30,8 @@ public class TransferController {
         try {
             String trackingCode = transferService.processTransferRequest(request);
             return ResponseEntity.ok(ApiResponse.success(
-                "Transfer request processed successfully", trackingCode));
+                "Transfer request processed successfully. Use this tracking code to check the status.", 
+                trackingCode));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest()
                 .body(ApiResponse.error(e.getMessage()));
@@ -38,16 +39,22 @@ public class TransferController {
     }
 
     /**
-     * Get transfer status by tracking code
+     * Get detailed transfer status by tracking code
      * @param trackingCode the tracking code
-     * @return transfer status information
+     * @return detailed transfer status information
      */
     @GetMapping("/status/{trackingCode}")
-    public ResponseEntity<ApiResponse<TransferTracking>> getTransferStatus(
+    public ResponseEntity<ApiResponse<TransferStatusDTO>> getTransferStatus(
             @PathVariable String trackingCode) {
         try {
-            TransferTracking status = transferService.getTransferStatus(trackingCode);
-            return ResponseEntity.ok(ApiResponse.success(status));
+            TransferStatusDTO status = transferService.getDetailedTransferStatus(trackingCode);
+            String message = status.getStatus().equals("COMPLETED") ?
+                "Transfer completed successfully" :
+                status.getStatus().equals("FAILED") ?
+                    "Transfer failed: " + status.getErrorMessage() :
+                    "Transfer is pending";
+                    
+            return ResponseEntity.ok(ApiResponse.success(message, status));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest()
                 .body(ApiResponse.error(e.getMessage()));

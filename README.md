@@ -108,14 +108,36 @@ A simple banking application that allows users to create client accounts with un
 #### Check Transfer Status
 
 - **GET** `/api/transfers/status/{trackingCode}`
-- Retrieves the status of a transfer request
-- Returns: Transfer details including:
-  - Type of transfer
-  - Sender and receiver accounts
-  - Amount and fee
-  - Status (PENDING, COMPLETED, FAILED)
-  - Request and process dates
-  - Error message (if failed)
+- Retrieves detailed status of a transfer request
+- Returns: Comprehensive transfer details including:
+  ```json
+  {
+    "success": true,
+    "message": "Transfer completed successfully",
+    "data": {
+      "trackingCode": "A1B2C3D4E5F6G7H8",
+      "status": "COMPLETED",
+      "type": "TRANSFER",
+      "senderAccountNumber": "12345678901234",
+      "senderName": "John Doe",
+      "receiverAccountNumber": "98765432109876",
+      "receiverName": "Jane Smith",
+      "amount": 100.0,
+      "fee": 0.1,
+      "description": "Monthly rent payment",
+      "requestDate": "2024-03-21T10:15:30",
+      "processDate": "2024-03-21T10:15:31",
+      "errorMessage": null
+    }
+  }
+  ```
+- Status values:
+  - `COMPLETED`: Transfer was successful
+  - `FAILED`: Transfer failed (check errorMessage for details)
+  - `PENDING`: Transfer is being processed
+- All timestamps are in ISO-8601 format
+- Fee is shown as 0 for DEPOSIT and HARVEST operations
+- For DEPOSIT and HARVEST operations, only relevant account information is shown
 
 ### Transfer Types
 
@@ -147,6 +169,90 @@ A simple banking application that allows users to create client accounts with un
   - Both accounts must exist and be active
   - Sender must have amount + fee available
   - Fee is 0.1% of transfer amount
+
+### Account Turnover Operations
+
+#### Get Account Turnover with Filters
+
+- **GET** `/api/turnover/account/{accountNumber}`
+- Retrieves paginated account turnover with flexible filtering
+- Query Parameters:
+  - `type`: Transaction type (DEPOSIT, HARVEST, TRANSFER)
+  - `originAccount`: Filter by sender account
+  - `destinationAccount`: Filter by receiver account
+  - `minAmount`: Minimum transaction amount
+  - `maxAmount`: Maximum transaction amount
+  - `startDate`: Start date (ISO-8601 format)
+  - `endDate`: End date (ISO-8601 format)
+  - `page`: Page number (default: 0)
+  - `pageSize`: Results per page (default: 10)
+  - `limit`: Limit total results
+- Returns: Paginated list of transactions with details:
+  ```json
+  {
+    "success": true,
+    "message": "Found 10 transactions (Page 1 of 5)",
+    "data": {
+      "content": [
+        {
+          "trackingCode": "A1B2C3D4E5F6G7H8",
+          "type": "TRANSFER",
+          "senderAccountNumber": "12345678901234",
+          "senderName": "John Doe",
+          "receiverAccountNumber": "98765432109876",
+          "receiverName": "Jane Smith",
+          "amount": 100.0,
+          "fee": 0.1,
+          "description": "Monthly rent payment",
+          "requestDate": "2024-03-21T10:15:30",
+          "processDate": "2024-03-21T10:15:31",
+          "status": "COMPLETED"
+        }
+      ],
+      "pageable": {
+        "pageNumber": 0,
+        "pageSize": 10,
+        "totalElements": 45,
+        "totalPages": 5
+      }
+    }
+  }
+  ```
+
+#### Get Last N Transactions
+
+- **GET** `/api/turnover/account/{accountNumber}/last/{limit}`
+- Retrieves the last N transactions for an account
+- Query Parameters:
+  - `type`: Optional filter by transaction type
+- Returns: Last N transactions in descending date order
+
+### Example Queries
+
+1. All transactions for an account between dates:
+
+   ```
+   GET /api/turnover/account/12345678901234?startDate=2024-03-01T00:00:00&endDate=2024-03-31T23:59:59
+   ```
+
+2. Transactions with amount between range:
+
+   ```
+   GET /api/turnover/account/12345678901234?minAmount=100&maxAmount=1000&startDate=2024-03-01T00:00:00&endDate=2024-03-31T23:59:59
+   ```
+
+3. Last 100 deposit transactions:
+   ```
+   GET /api/turnover/account/12345678901234/last/100?type=DEPOSIT
+   ```
+
+### Pagination Details
+
+- Results are paginated by default (10 items per page)
+- Use `page` and `pageSize` parameters to navigate through results
+- Maximum page size is capped at 100 items
+- Total count and page information included in response
+- Results are ordered by date (newest first)
 
 ## Database Setup with Docker
 
